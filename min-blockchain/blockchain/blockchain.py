@@ -18,26 +18,28 @@ class Blockchain:
     def register_node(self, address):
         self.nodes.add(urlparse(address).netloc)
 
-    def new_block(self, nonce, previous_hash):
+    def new_block(self, nonce, prevhash):
         """
         Creates new block
 
         :param nonce: Block's nonce
-        :param previous_hash: Previous block's hash
+        :param prevhash: Previous block's hash
         :return: Created block
         """
         block = {
-            'index': len(self.chain) + 1,
             'version': self.DEFAULT_VERSION,
-            'previous_hash': previous_hash or self.hash_block(self.chain[-1]),
+            'prevhash': prevhash or self.hash_block(self.chain[-1]),
             'transactions': self.current_transactions,
-            # Merkle Tree로 교체해야 함
+            # Change to merkle tree is better
             'timestamp': time(),
             'nonce': nonce
+            # bits, hash required
         }
 
-        self.current_transactions = []
+        self.current_transactions.clear()
+        # Clear transactions to generate new block
         self.chain.append(block)
+        # Append block to chain
 
         return block
 
@@ -53,8 +55,6 @@ class Blockchain:
             'recipient': recipient,
             'amount': amount
         })
-
-        return self.last_block['index'] + 1
 
     @property
     def last_block(self):
