@@ -41,3 +41,12 @@ class Mine(Resource):
                 'nonce': new_block['nonce']
             }
         }, 200
+
+
+class Transaction(Resource):
+    def post(self):
+        sender = request.form['sender']
+        recipient = request.form['recipient']
+        amount = request.form['amount']
+
+        blockchain.new_transaction(sender, recipient, amount)
