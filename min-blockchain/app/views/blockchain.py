@@ -6,6 +6,16 @@ from blockchain.blockchain import Blockchain
 blockchain = Blockchain()
 
 
+class Chain(Resource):
+    def get(self):
+        chains = blockchain.chain
+
+        return {
+            'chains': chains,
+            'length': len(chains)
+        }
+
+
 class Mine(Resource):
     def get(self):
         last_block = blockchain.last_block
