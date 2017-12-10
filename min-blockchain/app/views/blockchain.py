@@ -1,7 +1,8 @@
+from uuid import uuid4
+
 from flask import Response
 from flask_restful import Resource, request
 
-from app import node_id
 from blockchain.blockchain import Blockchain
 
 blockchain = Blockchain()
@@ -9,29 +10,28 @@ blockchain = Blockchain()
 
 class Node(Resource):
     def post(self):
+        """
+        Add new node to blockchain
+        """
         if not request.is_json:
             return Response('', 400)
 
-        req = request.get_json()
-        nodes = req.get('nodes')
+        node_id = uuid4()
 
-        if not all([nodes]):
-            return Response('', 400)
-
-        if isinstance(nodes, list):
-            return Response('Nodes must be a list', 400)
-
-        for node in nodes:
-            blockchain.register_node(node)
+        blockchain.register_node(node_id)
 
         return {
-            'message': 'New nodes have been added.',
+            'message': 'New node have been added.',
+            'node_id': node_id,
             'nodes': list(blockchain.nodes)
         }, 201
 
 
 class Chain(Resource):
     def get(self):
+        """
+        Returns blockchain
+        """
         chains = blockchain.chain
 
         return {
@@ -41,7 +41,16 @@ class Chain(Resource):
 
 
 class Mine(Resource):
-    def get(self):
+    def post(self):
+        req = request.get_json()
+        node_id = req.get('node_id')
+
+        if not all([node_id]):
+            return Response('', 400)
+
+        if node_id not in blockchain.nodes:
+            return Response('Invalid node id', 400)
+
         last_block = blockchain.last_block
         nonce = blockchain.proof_of_work(last_block['nonce'])
         # Mine
@@ -80,4 +89,9 @@ class Transaction(Resource):
         if not all([sender, recipient, amount]):
             return Response('', 400)
 
+        if sender not in blockchain.nodes or recipient not in blockchain.nodes:
+            return Response('Invalid sender id or recipient id', 400)
+
         blockchain.new_transaction(sender, recipient, amount)
+
+        return Response('', 201)
