@@ -1,3 +1,4 @@
+import copy
 import json
 from hashlib import sha256
 from time import time
@@ -19,11 +20,19 @@ class Blockchain:
         self.new_block(100, '1')
 
     def register_node(self, address):
+        """
+        Registers new full node
+
+        :param address: Hosts's address
+
+        :return: None
+        :rtype: None
+        """
         self.nodes.add(urlparse(address).netloc)
 
     def new_block(self, nonce, prevhash):
         """
-        Creates new block
+        Generates new block
 
         :param nonce: Block's nonce
         :param prevhash: Previous block's hash
@@ -31,22 +40,22 @@ class Blockchain:
         :return: Created block
         :rtype: dict
         """
-        block = {
+        new_block = {
             'version': self.DEFAULT_VERSION,
             'prevhash': prevhash or self.hash_block(self.chain[-1]),
-            'transactions': self.current_transactions,
+            'transactions': copy.deepcopy(self.current_transactions),
             # Change to merkle tree's hash is better
             'timestamp': time(),
             'nonce': nonce
             # bits, hash required
         }
 
+        self.chain.append(new_block)
+        # Append block to chain
         self.current_transactions.clear()
         # Clear transactions to generate new block
-        self.chain.append(block)
-        # Append block to chain
 
-        return block
+        return new_block
 
     @staticmethod
     def hash_block(block):
@@ -65,7 +74,7 @@ class Blockchain:
 
     def new_transaction(self, sender, recipient, amount):
         """
-        Adds new transaction to block
+        Adds new transaction on standby block
 
         :param sender: Sender's wallet ID of transaction
         :type sender: str
