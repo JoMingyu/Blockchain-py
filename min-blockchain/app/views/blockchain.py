@@ -13,12 +13,7 @@ class Node(Resource):
         """
         Add new node to blockchain
         """
-        if not request.is_json:
-            return Response('', 400)
-
-        node_id = uuid4()
-
-        blockchain.register_node(node_id)
+        node_id = blockchain.register_node(request.host)
 
         return {
             'message': 'New node have been added.',
@@ -42,6 +37,9 @@ class Chain(Resource):
 
 class Mine(Resource):
     def post(self):
+        if not request.is_json:
+            return Response('', 400)
+
         req = request.get_json()
         node_id = req.get('node_id')
 

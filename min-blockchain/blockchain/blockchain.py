@@ -3,6 +3,7 @@ import json
 from hashlib import sha256
 from time import time
 from urllib.parse import urlparse
+from uuid import uuid4
 
 
 class Blockchain:
@@ -14,7 +15,7 @@ class Blockchain:
         """
         self.current_transactions = []
         self.chain = []
-        self.nodes = set()
+        self.nodes = dict()
 
         # Create genesis block
         self.new_block(100, '1')
@@ -23,12 +24,15 @@ class Blockchain:
         """
         Registers new full node
 
-        :param address: Hosts's address
+        :param address: Host's address
 
-        :return: None
-        :rtype: None
+        :return: Node's ID
+        :rtype: str
         """
-        self.nodes.add(urlparse(address).netloc)
+        node_id = str(uuid4()).replace('-', '')
+        self.nodes[node_id] = urlparse(address).netloc
+
+        return node_id
 
     def new_block(self, nonce, prevhash):
         """
@@ -132,4 +136,4 @@ class Blockchain:
         guess = '{0}{1}'.format(prev_nonce, nonce).encode()
         guess_hash = sha256(guess).hexdigest()
 
-        return guess_hash[:4] == '0000'
+        return guess_hash[:5] == '00000'
